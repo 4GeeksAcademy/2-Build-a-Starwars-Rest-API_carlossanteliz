@@ -144,7 +144,7 @@ def person_by_id(people_id):
 
         response_body = {
             "msg": "Persona encontrada",
-            "results": "query_results.serialize()"
+            "results": query_results.serialize()
         }
 
         return jsonify(response_body), 200
@@ -211,7 +211,7 @@ def add_favorite_planet(planet_id):
         existing = FavoritePlanet.query.filter_by(
             user_id=current_user.id, planet_id=planet_id).first()
         if existing:
-            return jsonify({"msg": "Favorito de planeta ya existe", "results": existing.serialize()}), 200
+            return jsonify({"msg": "Planeta favorito ya existe", "results": existing.serialize()}), 200
 
         fav = FavoritePlanet(user_id=current_user.id, planet_id=planet_id)
         db.session.add(fav)
@@ -323,7 +323,3 @@ if __name__ == '__main__':
     PORT = int(os.environ.get('PORT', 3000))
     app.run(host='0.0.0.0', port=PORT, debug=False)
 
-# this only runs if `$ python src/app.py` is executed
-if __name__ == '__main__':
-    PORT = int(os.environ.get('PORT', 3000))
-    app.run(host='0.0.0.0', port=PORT, debug=False)
