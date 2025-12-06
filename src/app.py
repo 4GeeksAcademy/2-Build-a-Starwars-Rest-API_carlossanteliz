@@ -98,8 +98,6 @@ def all_users_favorites():
         if not current_user:
             return jsonify({"msg": "Usuario actual no encontrado"}), 400
 
-        
-
         response_body = {
             "msg": "Todo salió bien",
             "results": current_user.serialize_favorites()
@@ -196,37 +194,58 @@ def planet_by_id(planet_id):
         return jsonify({"msg": "Internal Server Error", "error": str(e)}), 500
 
 
-@app.route('/favorite/planet/<int:planet_id>', methods=['POST'])
-def add_favorite_planet(planet_id):
-    try:
-        current_user = User.query.first()
+# @app.route('/favorite/planet/<int:planet_id>', methods=['POST'])
+# def add_favorite_planet(planet_id):
+#     try:
+#         current_user = User.query.first()
 
-        if not current_user:
-            return jsonify({"msg": "Usuario actual no encontrado"}), 400
+#         if not current_user:
+#             return jsonify({"msg": "Usuario actual no encontrado"}), 400
 
-        planet = Planet.query.filter_by(id=planet_id).first()
-        if not planet:
-            return jsonify({"msg": "Planeta no existente"}), 400
+#         planet = Planet.query.filter_by(id=planet_id).first()
+#         if not planet:
+#             return jsonify({"msg": "Planeta no existente"}), 400
 
-        existing = FavoritePlanet.query.filter_by(
-            user_id=current_user.id, planet_id=planet_id).first()
-        if existing:
-            return jsonify({"msg": "Planeta favorito ya existe", "results": existing.serialize()}), 200
+#         existing = FavoritePlanet.query.filter_by(
+#             user_id=current_user.id, planet_id=planet_id).first()
+#         if existing:
+#             return jsonify({"msg": "Planeta favorito ya existe", "results": existing.serialize()}), 200
 
-        fav = FavoritePlanet(user_id=current_user.id, planet_id=planet_id)
-        db.session.add(fav)
-        db.session.commit()
+#         fav = FavoritePlanet(user_id=current_user.id, planet_id=planet_id)
+#         db.session.add(fav)
+#         db.session.commit()
 
-        response_body = {
-            "msg": "Favorito de planeta agregado",
-            "results": fav.serialize()
-        }
+#         response_body = {
+#             "msg": "Favorito de planeta agregado",
+#             "results": fav.serialize()
+#         }
 
-        return jsonify(response_body), 200
+#         return jsonify(response_body), 200
 
-    except Exception as e:
-        print(f"Error al agregar favorito de planeta: {e}")
-        return jsonify({"msg": "Internal Server Error", "error": str(e)}), 500
+#     except Exception as e:
+#         print(f"Error al agregar favorito de planeta: {e}")
+#         return jsonify({"msg": "Internal Server Error", "error": str(e)}), 500
+
+@app.route('/favorite/planet/<int:user_id>/<int:planet_id>', methods=['POST'])
+def add_favorite_planet(user_id, planet_id):
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({"msg": "Usuario no encontrado"}), 404
+
+    planet = Planet.query.get(planet_id)
+    if not planet:
+        return jsonify({"msg": "Planeta no encontrado"}), 404
+
+    existing = FavoritePlanet.query.filter_by(
+        user_id=user_id, planet_id=planet_id).first()
+    if existing:
+        return jsonify({"msg": "Ya existe"}), 200
+
+    fav = FavoritePlanet(user_id=user_id, planet_id=planet_id)
+    db.session.add(fav)
+    db.session.commit()
+
+    return jsonify({"msg": "Favorito agregado", "results": fav.serialize()}), 200
 
 
 @app.route('/favorite/people/<int:people_id>', methods=['POST'])
@@ -322,4 +341,3 @@ def delete_favorite_people(people_id):
 if __name__ == '__main__':
     PORT = int(os.environ.get('PORT', 3000))
     app.run(host='0.0.0.0', port=PORT, debug=False)
-

@@ -84,15 +84,34 @@ class FavoritePeople(db.Model):
         return {"id": self.id, "user_id": self.user_id, "people_id": self.people_id}
 
 
+# class FavoritePlanet(db.Model):
+#     __tablename__ = "favorite_planet"
+
+#     id: Mapped[int] = mapped_column(primary_key=True)
+#     user_id: Mapped[int] = mapped_column(ForeignKey("user.id"), nullable=False)
+#     planet_id: Mapped[int] = mapped_column(ForeignKey("planet.id"), nullable=False)
+
+#     user: Mapped["User"] = relationship("User", back_populates="planets")
+#     planet: Mapped["Planet"] = relationship("Planet", back_populates="favorites")
+
+#     def serialize(self):
+#         return {"id": self.id, "user_id": self.user_id, "planet_id": self.planet_id}
+
 class FavoritePlanet(db.Model):
-    __tablename__ = "favorite_planet"
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    planet_id = db.Column(db.Integer, db.ForeignKey('planet.id'))
 
-    id: Mapped[int] = mapped_column(primary_key=True)
-    user_id: Mapped[int] = mapped_column(ForeignKey("user.id"), nullable=False)
-    planet_id: Mapped[int] = mapped_column(ForeignKey("planet.id"), nullable=False)
+    user = db.relationship(User)
+    planet = db.relationship(Planet)
 
-    user: Mapped["User"] = relationship("User", back_populates="planets")
-    planet: Mapped["Planet"] = relationship("Planet", back_populates="favorites")
+    def __repr__(self):
+        return f'<FavoritePlanet {self.user_id} → {self.planet_id}>'
 
     def serialize(self):
-        return {"id": self.id, "user_id": self.user_id, "planet_id": self.planet_id}
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "planet_id": self.planet_id,
+            "planet": self.planet.serialize() if self.planet else None
+        }
