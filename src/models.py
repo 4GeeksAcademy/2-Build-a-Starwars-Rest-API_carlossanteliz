@@ -19,6 +19,12 @@ class User(db.Model):
     def serialize(self):
         return {"id": self.id, "email": self.email}
 
+    def serialize_favorites(self):
+        return {
+            "planets": [item.serialize() for item in self.planets] if len(self.planets) > 0 else [],
+            "people": [item.serialize() for item in self.people] if len(self.people) > 0 else []
+        }
+
 
 class People(db.Model):
     __tablename__ = "people"

@@ -8,7 +8,7 @@ from flask_swagger import swagger
 from flask_cors import CORS
 from utils import APIException, generate_sitemap
 from admin import setup_admin
-from models import db, User
+from models import db, User, Planet, People, FavoritePeople, FavoritePlanet
 # from models import Person
 
 app = Flask(__name__)
@@ -98,13 +98,11 @@ def all_users_favorites():
         if not current_user:
             return jsonify({"msg": "Usuario actual no encontrado"}), 400
 
-        favorites = Favorite.query.filter_by(user_id=current_user.id).all()
-
-        results = list(map(lambda item: serialize(), favorites))
+        
 
         response_body = {
             "msg": "Todo salió bien",
-            "results": results
+            "results": current_user.serialize_favorites()
         }
 
         return jsonify(response_body), 200
@@ -159,7 +157,7 @@ def person_by_id(people_id):
 @app.route('/planets', methods=['GET'])
 def all_planets():
     try:
-        query_results = Planets.query.all()
+        query_results = Planet.query.all()
 
         if not query_results:
             return jsonify({"msg": "Planetas no encontrados"}), 400
@@ -210,12 +208,12 @@ def add_favorite_planet(planet_id):
         if not planet:
             return jsonify({"msg": "Planeta no existente"}), 400
 
-        existing = Favorite.query.filter_by(
+        existing = FavoritePlanet.query.filter_by(
             user_id=current_user.id, planet_id=planet_id).first()
         if existing:
             return jsonify({"msg": "Favorito de planeta ya existe", "results": existing.serialize()}), 200
 
-        fav = Favorite(user_id=current_user.id, planet_id=planet_id)
+        fav = FavoritePlanet(user_id=current_user.id, planet_id=planet_id)
         db.session.add(fav)
         db.session.commit()
 
@@ -243,12 +241,12 @@ def add_favorite_people(people_id):
         if not person:
             return jsonify({"msg": "Persona no existente"}), 400
 
-        existing = Favorite.query.filter_by(
+        existing = FavoritePeople.query.filter_by(
             user_id=current_user.id, people_id=people_id).first()
         if existing:
             return jsonify({"msg": "Favorito de persona ya existe", "results": existing.serialize()}), 200
 
-        fav = Favorite(user_id=current_user.id, people_id=people_id)
+        fav = FavoritePeople(user_id=current_user.id, people_id=people_id)
         db.session.add(fav)
         db.session.commit()
 
@@ -272,7 +270,7 @@ def delete_favorite_planet(planet_id):
         if not current_user:
             return jsonify({"msg": "Usuario actual no encontrado"}), 400
 
-        fav = Favorite.query.filter_by(
+        fav = FavoritePlanet.query.filter_by(
             user_id=current_user.id, planet_id=planet_id).first()
         if not fav:
             return jsonify({"msg": "Favorito de planeta no existente"}), 400
@@ -300,7 +298,7 @@ def delete_favorite_people(people_id):
         if not current_user:
             return jsonify({"msg": "Usuario actual no encontrado"}), 400
 
-        fav = Favorite.query.filter_by(
+        fav = FavoritePeople.query.filter_by(
             user_id=current_user.id, people_id=people_id).first()
         if not fav:
             return jsonify({"msg": "Favorito de persona no existente"}), 400
