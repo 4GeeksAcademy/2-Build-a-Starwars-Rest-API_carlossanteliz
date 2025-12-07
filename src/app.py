@@ -9,7 +9,7 @@ from flask_cors import CORS
 from utils import APIException, generate_sitemap
 from admin import setup_admin
 from models import db, User, Planet, People, FavoritePeople, FavoritePlanet
-# from models import Person
+
 
 app = Flask(__name__)
 app.url_map.strict_slashes = False
@@ -40,8 +40,6 @@ def handle_invalid_usage(error):
 @app.route('/')
 def sitemap():
     return generate_sitemap(app)
-# ////////
-# trayendo a todos lo usuarios
 
 
 @app.route('/users', methods=['GET'])
@@ -65,8 +63,6 @@ def all_users():
     except Exception as e:
         print(f"Error al obtener usuarios: {e}")
         return jsonify({"msg": "Internal Server Error", "error": str(e)}), 500
-
-# trayendo un usario por ID
 
 
 @app.route('/user/<int:user_id>', methods=['GET'])
@@ -106,7 +102,7 @@ def all_users_favorites():
         return jsonify(response_body), 200
 
     except Exception as e:
-        print(f"Error al obtener favoritos del ususaio: {e}")
+        print(f"Error al obtener los favoritos del usuario: {e}")
         return jsonify({"msg": "Internal Server Error", "error": str(e)}), 500
 
 
@@ -194,38 +190,6 @@ def planet_by_id(planet_id):
         return jsonify({"msg": "Internal Server Error", "error": str(e)}), 500
 
 
-# @app.route('/favorite/planet/<int:planet_id>', methods=['POST'])
-# def add_favorite_planet(planet_id):
-#     try:
-#         current_user = User.query.first()
-
-#         if not current_user:
-#             return jsonify({"msg": "Usuario actual no encontrado"}), 400
-
-#         planet = Planet.query.filter_by(id=planet_id).first()
-#         if not planet:
-#             return jsonify({"msg": "Planeta no existente"}), 400
-
-#         existing = FavoritePlanet.query.filter_by(
-#             user_id=current_user.id, planet_id=planet_id).first()
-#         if existing:
-#             return jsonify({"msg": "Planeta favorito ya existe", "results": existing.serialize()}), 200
-
-#         fav = FavoritePlanet(user_id=current_user.id, planet_id=planet_id)
-#         db.session.add(fav)
-#         db.session.commit()
-
-#         response_body = {
-#             "msg": "Favorito de planeta agregado",
-#             "results": fav.serialize()
-#         }
-
-#         return jsonify(response_body), 200
-
-#     except Exception as e:
-#         print(f"Error al agregar favorito de planeta: {e}")
-#         return jsonify({"msg": "Internal Server Error", "error": str(e)}), 500
-
 @app.route('/favorite/planet/<int:user_id>/<int:planet_id>', methods=['POST'])
 def add_favorite_planet(user_id, planet_id):
     user = User.query.get(user_id)
@@ -263,21 +227,21 @@ def add_favorite_people(people_id):
         existing = FavoritePeople.query.filter_by(
             user_id=current_user.id, people_id=people_id).first()
         if existing:
-            return jsonify({"msg": "Favorito de persona ya existe", "results": existing.serialize()}), 200
+            return jsonify({"msg": "Persona ya existente como favorita", "results": existing.serialize()}), 200
 
         fav = FavoritePeople(user_id=current_user.id, people_id=people_id)
         db.session.add(fav)
         db.session.commit()
 
         response_body = {
-            "msg": "Favorito de persona agregado",
+            "msg": "Persona agregada a favoritos",
             "results": fav.serialize()
         }
 
         return jsonify(response_body), 200
 
     except Exception as e:
-        print(f"Error al agregar favorito de persona: {e}")
+        print(f"Error al agregar persona al listado de favorito: {e}")
         return jsonify({"msg": "Internal Server Error", "error": str(e)}), 500
 
 
@@ -292,20 +256,20 @@ def delete_favorite_planet(planet_id):
         fav = FavoritePlanet.query.filter_by(
             user_id=current_user.id, planet_id=planet_id).first()
         if not fav:
-            return jsonify({"msg": "Favorito de planeta no existente"}), 400
+            return jsonify({"msg": "Planeta favorito no existente"}), 400
 
         db.session.delete(fav)
         db.session.commit()
 
         response_body = {
-            "msg": "Favorito de planeta eliminado",
+            "msg": " Planeta eliminado de favorito",
             "results": {"planet_id": planet_id}
         }
 
         return jsonify(response_body), 200
 
     except Exception as e:
-        print(f"Error al eliminar favorito de planeta: {e}")
+        print(f"Error al eliminar planeta favorito: {e}")
         return jsonify({"msg": "Internal Server Error", "error": str(e)}), 500
 
 
@@ -320,20 +284,20 @@ def delete_favorite_people(people_id):
         fav = FavoritePeople.query.filter_by(
             user_id=current_user.id, people_id=people_id).first()
         if not fav:
-            return jsonify({"msg": "Favorito de persona no existente"}), 400
+            return jsonify({"msg": "Persona favorita no existente"}), 400
 
         db.session.delete(fav)
         db.session.commit()
 
         response_body = {
-            "msg": "Favorito de persona eliminado",
+            "msg": "Persona eliminada de favoritos",
             "results": {"people_id": people_id}
         }
 
         return jsonify(response_body), 200
 
     except Exception as e:
-        print(f"Error al eliminar favorito de persona: {e}")
+        print(f"Error al eliminar persona de favoritos: {e}")
         return jsonify({"msg": "Internal Server Error", "error": str(e)}), 500
 
 
